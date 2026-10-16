@@ -1,3 +1,4 @@
+
 const js = require('@eslint/js')
 const react = require('eslint-plugin-react')
 const jest = require('eslint-plugin-jest')
@@ -9,11 +10,13 @@ module.exports = [
       'webpack.config.js',
       'eslint.config.js',
       '.eslintrc.js',
-      'node_modules/**',
-      'dist/**'
+      'node_modules/',
+      'dist/'
     ]
   },
+
   js.configs.recommended,
+
   {
     files: ['app.js'],
     languageOptions: {
@@ -24,17 +27,24 @@ module.exports = [
       }
     },
     rules: {
-      'indent': ['error', 2],
+      indent: ['error', 2],
       'linebreak-style': ['error', 'unix'],
-      'quotes': ['error', 'single'],
-      'semi': ['error', 'never'],
-      'eqeqeq': 'error',
+      quotes: ['error', 'single'],
+      semi: ['error', 'never'],
+      eqeqeq: 'error',
       'no-trailing-spaces': 'error',
       'object-curly-spacing': ['error', 'always'],
-      'arrow-spacing': ['error', { 'before': true, 'after': true }],
+      'arrow-spacing': [
+        'error',
+        {
+          before: true,
+          after: true
+        }
+      ],
       'no-console': 0
     }
   },
+
   {
     files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
     plugins: {
@@ -62,16 +72,33 @@ module.exports = [
     },
     rules: {
       ...react.configs.recommended.rules,
-      'indent': ['error', 2],
+      indent: ['error', 2],
       'linebreak-style': ['error', 'unix'],
-      'quotes': ['error', 'single'],
-      'semi': ['error', 'never'],
-      'eqeqeq': 'error',
+      quotes: ['error', 'single'],
+      semi: ['error', 'never'],
+      eqeqeq: 'error',
       'no-trailing-spaces': 'error',
       'object-curly-spacing': ['error', 'always'],
-      'arrow-spacing': ['error', { 'before': true, 'after': true }],
+      'arrow-spacing': [
+        'error',
+        {
+          before: true,
+          after: true
+        }
+      ],
       'no-console': 'error',
       'react/prop-types': 0
+    }
+  },
+
+  {
+    files: ['playwright.config.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.node
+      }
     }
   }
 ]
