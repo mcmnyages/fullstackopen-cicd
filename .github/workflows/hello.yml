@@ -17,3 +17,4 @@ jobs:
       - name: Run ls 
         run: |
            ls
+           ls -la
