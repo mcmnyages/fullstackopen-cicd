@@ -1,7 +1,7 @@
 name: Hello World
 on:
   push:
-    -main
+    - main
 
 jobs:
   hello_world_job:
