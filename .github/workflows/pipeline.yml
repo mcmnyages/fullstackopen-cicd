@@ -46,6 +46,9 @@ jobs:
           retention-days: 30
 
       - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }}
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: curl --fail --silent --show-error "$RENDER_DEPLOY_HOOK"
+
+        
