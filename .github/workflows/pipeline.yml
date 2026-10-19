@@ -9,9 +9,8 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v6
 
@@ -45,39 +44,18 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
+  deploy:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: curl --fail --silent --show-error "$RENDER_DEPLOY_HOOK"
 
-      # --- SUCCESS NOTIFICATION ---
-      - name: Success Notification
-        uses: sarisia/actions-status-discord@v1
-        if: ${{ success() && github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "New version deployed!"
-          description: "A new version of the app has been successfully built and deployed."
-          color: 0x00FF00
-
-      # --- FAILURE NOTIFICATION ---
-      - name: Failure Notification
-        uses: sarisia/actions-status-discord@v1
-        if: ${{ failure() }}
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "Build Failed ❌"
-          description: |
-            **Commit:** ${{ github.event.head_commit.url }} [${{ github.event.head_commit.id }}]
-            **Author:** ${{ github.actor }}
-            **Message:** ${{ github.event.head_commit.message }}
-            
-            The pipeline has failed. Check the logs for more details.
-          color: 0xFF0000
-
   tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,3 +68,34 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+
+  notify_success:
+    needs: [test, deploy]
+    runs-on: ubuntu-latest
+    if: ${{ success() && github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    steps:
+      - name: Success Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "New version deployed!"
+          description: "A new version of the app has been successfully built and deployed."
+          color: 0x00FF00
+
+  notify_failure:
+    needs: [test, deploy]
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
+      - name: Failure Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "Build Failed ❌"
+          description: |
+            **Commit:** ${{ github.event.head_commit.url }} [${{ github.event.head_commit.id }}]
+            **Author:** ${{ github.actor }}
+            **Message:** ${{ github.event.head_commit.message }}
+            
+            The pipeline has failed. Check the logs for more details.
+          color: 0xFF0000
